@@ -2,10 +2,12 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "lil-gui";
+import { Color } from "three";
 
 /**
  * デバッグ(色つけるときに追加)
  */
+// const gui = new dat.GUI();
 
 /**
  * 必須の3要素
@@ -42,10 +44,47 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 /**
  * ここからパーティクルを記述
  */
+const donutParticlesGeometry = new THREE.TorusGeometry(2.8, 0.7, 16, 100);
+
+const donutParticlesMaterials = new THREE.PointsMaterial({
+  size: 0.023,
+  color: "#058514",
+});
+
+const donutPaticles = new THREE.Points(
+  donutParticlesGeometry,
+  donutParticlesMaterials
+);
+
+// Particle 追加
+const count = 10000;
+const particlesGeometry = new THREE.BufferGeometry();
+const positionArray = new Float32Array(count * 3);
+
+for (let i = 0; i < count * 3; i++) {
+  positionArray[i] = (Math.random() - 0.5) * 15;
+}
+
+particlesGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(positionArray, 3)
+);
+
+const particlesMaterials = new THREE.PointsMaterial({
+  size: 0.01,
+});
+
+const particles = new THREE.Points(particlesGeometry, particlesMaterials);
+
+scene.add(donutPaticles, particles);
+
+// デバッグ
+// gui.addColor(donutParticlesMaterials, "color");
 
 //カメラ制御
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+controls.enablePan = false;
 
 /**
  * アニメーション
@@ -54,6 +93,10 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // camerawork
+  camera.position.x = Math.cos(elapsedTime * 0.5) * 6;
+  camera.position.z = Math.sin(elapsedTime * 0.5) * 6;
 
   controls.update();
   renderer.render(scene, camera);
